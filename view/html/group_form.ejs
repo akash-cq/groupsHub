@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>group-creation</title>
+    <link rel="stylesheet" href="../css/Groupform.css" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="logo">
+          <h1>Group-Portal</h1>
+        </div>
+        <div class="menu">
+          <ul>
+            <li class="join">Join-Group</li>
+            <li class="create">Create-Group</li>
+            <li class="groups-analysis">Your Groups</li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+    <main>
+      <div class="container">
+        <label for="group-name">Group Name:</label>
+        <input type="text" id="group-name" placeholder="enter group name" />
+        <label for="group-des">Group Description:</label>
+        <textarea
+          type="text"
+          id="group-des"
+          placeholder="enter group description"
+        ></textarea>
+        <div class="radios">
+          <label for="prvt" class="type">Private Group</label>
+          <input type="radio" id="prvt" name="groupType" />
+          <label for="prvt" class="type">Public Group</label>
+          <input type="radio" id="pblic" name="groupType" />
+        </div>
+        <div class="limitDiv hide">
+          <label for="limit">Limit of Memeber</label>
+          <input type="number" id="limit" />
+        </div>
+        <p id="message"></p>
+        <button id="submit">Submit</button>
+      </div>
+    </main>
+    <script>
+      let group_name = document.querySelector("#group-name");
+      let group_des = document.querySelector("#group-des");
+      let submit = document.querySelector("#submit");
+      let message = document.querySelector("#message");
+      let logo = document.querySelector(".logo");
+      let btnCreate = document.querySelector(".create");
+      let btnJoin = document.querySelector(".join");
+      let radios = document.querySelectorAll('input[name="groupType"]');
+      radios[0].addEventListener("click", () => {
+        if (radios[0].checked) {
+          document.querySelector(".limitDiv").classList.remove("hide");
+        }
+      });
+      radios[1].addEventListener("click", () => {
+        if (radios[1].checked) {
+          document.querySelector(".limitDiv").classList.add("hide");
+        }
+      });
+      submit.addEventListener("click", async function () {
+        let name = group_name.value.trim();
+        let des = group_des.value.trim();
+        if (name === "" || des == "") {
+          message.textContent = "Please fill in all fields";
+          message.style.color = "red";
+          return false;
+        }
+        let grpType = radios[0].checked == true ? "private" : "public";
+        console.log(grpType);
+        let memebrLimit = Number.MAX_SAFE_INTEGER;
+        if (grpType == "private") {
+          let limit = document.querySelector("#limit").value.trim();
+          if (limit != "") {
+            if (limit <= 0) {
+              message.textContent = "Limit must be greater than 0";
+              message.style.color = "red";
+              return false;
+            } else memebrLimit = limit;
+          }
+        }
+        const obj = {
+          group_name: name,
+          group_description: des,
+          groupType: grpType,
+          limit: memebrLimit,
+        };
+        fetch("/CreategroupPage/creategroup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(obj),
+        })
+          .then((data) => data.json())
+          .then((data) => console.log(data))
+          .catch((err) => console.log(err));
+      });
+      btnCreate.addEventListener("click", () => {
+        window.location = "/user/CreategroupPage";
+      });
+      btnJoin.addEventListener("click", () => {
+        window.location = "/user/joingroup";
+      });
+      logo.addEventListener("click", () => {
+        window.location = "/home";
+      });
+    </script>
+  </body>
+</html>

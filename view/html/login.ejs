@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <link rel="stylesheet" href="../css/login.css" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="logo">
+          <h1>Group-Portal</h1>
+        </div>
+        <div class="menu">
+          <ul>
+            <li class="login">Login</li>
+            <li class="register">Register</li>
+            <li class="dashboard"> DashBoard</li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+    <div class="container">
+      <h3>Login</h3>
+
+      <label for="email"> Email : </label>
+      <input
+        type="text"
+        name="email"
+        id="email"
+        placeholder="enter your email or username"
+        required
+      />
+      <label for="password"> Password : </label>
+      <input
+        type="password"
+        name="password"
+        id="password"
+        placeholder="enter your password"
+        required
+      />
+      <p id="message"></p>
+      <button type="submit" class="submit" name="submit">Login</button>
+    </div>
+    <script>
+      let email = document.querySelector("#email");
+      let password = document.querySelector("#password");
+      let submit = document.querySelector(".submit");
+      let message = document.querySelector("#message");
+      const login = document.querySelector(".login");
+      const register = document.querySelector(".register");
+      submit.addEventListener("click", async function () {
+        if (email.value.trim() == "" || password.value.trim() == "") {
+          message.textContent = "Please fill in all fields";
+          message.style.color = "red";
+          return false;
+        }
+        const obj = {
+          email: email.value.trim(),
+          password: password.value.trim(),
+        };
+        fetch("/user/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(obj),
+        })
+          .then((Response) => {
+            return Response.json();
+          })
+          .then((data) => {
+            if (data.msg == "success") window.location = "/home";
+            else {
+              message.textContent = "Invalid email or password";
+              message.style.color = "red";
+              setTimeout(() => {
+                message.textContent = "";
+              }, 3000);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      });
+
+      login.addEventListener("click", async () => {
+        try {
+          location = "/user/login";
+        } catch (err) {
+          console.log(err);
+        }
+      });
+      register.addEventListener("click", async () => {
+        try {
+          location = "/user/registartion";
+        } catch (err) {
+          console.log(err);
+        }
+      });
+      const dashboard = document.querySelector(".dashboard")
+dashboard.addEventListener("click", async () => {
+  try {
+    location = "/";
+  } catch (err) {
+    console.log(err);
+  }
+});
+    </script>
+  </body>
+</html>

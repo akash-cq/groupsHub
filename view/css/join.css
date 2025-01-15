@@ -1,0 +1,109 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: black;
+    color: whitesmoke;
+}
+
+header {
+    background: black;
+    padding: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo h1 {
+    color: white;
+    font-size: 1.8rem;
+}
+
+.menu ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    margin: 0;
+    padding: 0;
+}
+
+.menu li {
+    color: white;
+    cursor: pointer;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+    border-radius: 5px;
+    display: inline-block;
+    position: relative;
+    /* Ensures stability in layout */
+}
+
+.menu li::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: blueviolet;
+    transition: width 0.3s ease;
+}
+
+.menu li:hover::after {
+    width: 100%;
+    /* Smooth underline animation */
+}
+
+.menu li:hover {
+    color: blueviolet;
+}
+.search{
+    position: relative;
+    border: 1px solid white;
+    height:  100%;
+    padding: 10px;
+}
+#select{
+    height: 100%;
+    border-radius: 10px;
+}
+main{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    border: 1px solid white;
+}
+.card{
+    display: flex;
+    flex-direction: column;
+    height: 30rem;
+    border: 1px solid whitesmoke;
+    background-color: black;
+    margin: 10px;
+    margin-left: 5%;
+    border-radius: 2px;
+    width: 18rem;
+}
+.img{
+    background-color: black;
+    margin-top: 2%;
+    width: 100%;
+    height: 30%;
+    background-image: url("https://tse1.mm.bing.net/th?id=OIP.a_C9v1H7RBbVyFjU4udThgHaKX&pid=Api&P=0&h=180");
+    background-repeat:no-repeat;
+    background-position: center;
+    
+}
+h5{
+    color: rgba(0, 128, 0, 0.907);
+}
+h6{
+    color: rgba(122, 19, 219, 0.81);
+}

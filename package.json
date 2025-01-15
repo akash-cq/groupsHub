@@ -1,0 +1,30 @@
+{
+  "name": "nodejs",
+  "version": "1.0.0",
+  "description": "its group portal where user can join public or private groups or held competition",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js",
+    "build": "npx postcss ./view/css/style.css -o ./view/css/output.css"
+  },
+  "author": "Akash Gupta",
+  "license": "ISC",
+  "dependencies": {
+    "autoprefixer": "^10.4.20",
+    "cookie-parse": "^0.4.0",
+    "cookie-parser": "^1.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.3",
+    "nodemon": "^3.1.9",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "uuid": "^11.0.4"
+  },
+  "devDependencies": {
+    "postcss-cli": "^11.0.0"
+  }
+}

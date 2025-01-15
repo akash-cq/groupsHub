@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signup</title>
+    <link rel="stylesheet" href="../css/registartion.css" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="logo">
+          <h1>Group-Portal</h1>
+        </div>
+        <div class="menu">
+          <ul>
+            <li class="login">Login</li>
+            <li class="register">Register</li>
+            <li class="dashboard">DashBoard</li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+    <div class="container">
+      <h3>Registeration</h3>
+
+      <label for="username"> username : </label>
+      <input
+        type="text"
+        name="username"
+        id="username"
+        placeholder="enter username"
+        required
+      />
+      <label for="email"> Email : </label>
+      <input
+        type="text"
+        name="email"
+        id="email"
+        placeholder="enter your email"
+        required
+      />
+      <label for="password"> Password : </label>
+      <input
+        type="password"
+        name="password"
+        id="password"
+        minimume="8"
+        placeholder="set password"
+        required
+      />
+      <p id="message"></p>
+      <input type="checkbox" id="termcond" />
+      <h6>
+        I agree <span style="color: blue">Term</span> &
+        <span style="color: blue">Condition</span>
+      </h6>
+      <button type="submit" id="submit" name="submit">Register</button>
+    </div>
+    <script src="../js/register.js"></script>
+  </body>
+</html>

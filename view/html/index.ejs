@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Group-Portal</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="logo">
+          <h1>Group-Portal</h1>
+        </div>
+        <div class="menu">
+          <ul>
+            <li class="join">Join-Group</li>
+            <li class="create">Create-Group</li>
+            <li class="groups-analysis">Your Groups</li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+    <main>
+      <div class="left-part">
+        <div class="upper">
+          <div class="dp">
+            <img
+              src="https://tse1.mm.bing.net/th?id=OIP.a_C9v1H7RBbVyFjU4udThgHaKX&pid=Api&P=0&h=180"
+              alt="dp"
+            />
+          </div>
+          <div class="user-info">
+            <h6 class="username">Username</h6>
+            <p class="email-info">user-email</p>
+          </div>
+        </div>
+        <div class="skill">
+            <h6>Skills</h6>
+            <div class="skill-list">
+              <span>skill1</span>
+              <span>skill2</span>
+              <span>skill3</span>
+              <span>skill4</span>
+              <span>skill5</span>
+              
+            </div>
+        </div>
+      </div>
+      <div class="right-part">
+        <div class="upper-head">
+            <select class="sort">
+                <option value="" disabled selected>Sort Group</option>
+                <option value="Recently-joined">Recently Joined</option>
+                <option value="Most-Active">Most Active</option>
+                <option value="Alphabetical">Lexicographically</option>
+                <option value="reset">Reset</option>
+                </select>
+            </select>
+            <input type="search" placeholder="Search group"  class="search"/>
+        </div>
+        <table>
+    <thead>
+      <tr>
+        <th class="srnumber">Sr. No</th>
+        <th class="group-name">Group Name</th>
+        <th class="total-members">Total Members</th>
+        <th class="group-description">Group Description</th>
+      </tr>
+    </thead>
+        <tbody>
+        </tbody>
+        </table>
+    </main>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script src="../js/index.js"></script>
+  </body>
+</html>
