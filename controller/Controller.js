@@ -149,7 +149,7 @@ async function getdataOfUser(req, res) {
           members: group.members.length,
           joined_at: join,
           last_active_group: group.last_Active,
-          groupId:grpsIds.groupId
+          groupId: grpsIds.groupId,
         };
         groups.push(obj);
       }
@@ -159,7 +159,7 @@ async function getdataOfUser(req, res) {
       username: user.name,
       email: user.email,
       groups: groups,
-      id:user._id
+      id: user._id,
     };
     return res.status(200).json(data);
   } catch {
@@ -189,7 +189,7 @@ async function groupListData(req, res) {
           grps.members.filter(
             (member) => member?._id?.toString() === userId.toString()
           ).length > 0;
-          const isAdmin = grps.admin==userId;
+        const isAdmin = grps.admin == userId;
         console.log("t/f");
         let obj = {
           groupname: grps.name,
@@ -198,7 +198,7 @@ async function groupListData(req, res) {
           grouptype: grps.group_type,
           group_id: grps._id,
           join: joined,
-          adminIs:isAdmin
+          adminIs: isAdmin,
         };
         data.push(obj);
       }
@@ -244,40 +244,72 @@ async function joinGroupHandle(req, res) {
     return res.status(400).json({ msg: "error internaly" });
   }
 }
-async function chatPage(req,res) {
-  const userId = req.params.userId
-  const details = getUser(req,res);
+async function chatPage(req, res) {
+  const userId = req.params.userId;
+  const details = getUser(req, res);
   const userid = details.user_id;
-  if(userid!=userId)return res.status(401).json({msg:"not uthorized"});
+  if (userid != userId) return res.status(401).json({ msg: "not uthorized" });
   return res.render("html/chat");
 }
-async function Chats(req,res) {
-  try{
+async function Chats(req, res) {
+  try {
     const { content, send_at, userid, groupid } = req.body;
-    console.log("not error")
+    console.log("not error");
     const group = await Group.findById(groupid);
-    console.log(req.body,group)
-    if(!group)return res.status(401).json({msg:"group not find"});
-    const user = getUser(req,res);
-    console.log(group.name,user.user_id)
-    const isMemeber = group.members.find(users=> users._id==user.user_id)
-    console.log(isMemeber)
-    if(!isMemeber)return res.status(400).json({msg:"not authorized"});
-    const obj={
-      sender:user.user_id,
-      content:content,
-    }
+    console.log(req.body, group);
+    if (!group) return res.status(401).json({ msg: "group not find" });
+    const user = getUser(req, res);
+    console.log(group.name, user.user_id);
+    const isMemeber = group.members.find((users) => users._id == user.user_id);
+    console.log(isMemeber);
+    if (!isMemeber) return res.status(400).json({ msg: "not authorized" });
+    const obj = {
+      sender: user.user_id,
+      content: content,
+      name: user.user_name,
+    };
     group.messages.push(obj);
-   await group.save();
-   console.log("time")
-   let data = {
-     name: user.user_name,
-   };
-    return res.status(200).json({msg:"success",data:data})
-  }
-  catch{
+    await group.save();
+    console.log("time");
+    let data = {
+      name: user.user_name,
+    };
+    return res.status(200).json({ msg: "success", data: data });
+  } catch {
     console.log(error);
-    return res.status(500).json({msg:"erro"})
+    return res.status(500).json({ msg: "erro" });
+  }
+}
+async function getmsg(req, res) {
+  try {
+    const groupid = req.params.groupid;
+    console.log(groupid);
+    const group = await Group.findById(groupid);
+    console.log(group);
+
+    if (!group) return res.status(404).json({ msg: "group not find" });
+    let data = [];
+    console.log(group.messages.length);
+    if (group.messages.length > 0) {
+      group.messages.forEach((obj) => {
+        let obj2 = {
+          name: obj.name,
+          content: obj.content,
+          timestamp: obj.timestamp,
+        };
+        data.push(obj2);
+      });
+    }
+    console.log("user before details")
+    let user = getUser(req,res);
+    console.log(user,"user")
+    let obj = {
+      username: user.user_name,
+    };
+    data.push(obj);
+    return res.status(200).json({ data: data });
+  } catch {
+    return res.status(500).json({ msg: "internal error" });
   }
 }
 module.exports = {
@@ -296,4 +328,5 @@ module.exports = {
   joinGroupHandle,
   chatPage,
   Chats,
+  getmsg,
 };

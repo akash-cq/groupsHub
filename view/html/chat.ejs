@@ -92,8 +92,7 @@
     <div class="container">
       <div class="left"></div>
       <div class="right">
-        <div class="message">
-        </div>
+        <div class="message"></div>
         <div class="text">
           <textarea cols="70" placeholder="Message..."></textarea>
           <button class="submit">send</button>
@@ -102,48 +101,86 @@
     </div>
     <script>
       let txt = document.querySelector("textarea");
-      let btnSend = document.querySelector(".submit")
-      let messageArea=document.querySelector(".message")
-      btnSend.addEventListener("click",async ()=>{
+      let btnSend = document.querySelector(".submit");
+      let messageArea = document.querySelector(".message");
+      let userName;
+      btnSend.addEventListener("click", async () => {
         let msg = txt.value.trim();
-        if(msg=="")return false;
+        if (msg == "") return false;
         let d = new Date();
         const Fullurl = window.location.href;
         const url = new URL(Fullurl);
         const path = url.pathname.split("/");
-        const groupid =  path[path.length-2]
+        const groupid = path[path.length - 2];
 
-        let obj={
-          content:msg,
-          userid:path[path.length-1],
-          groupid :groupid
-        }
+        let obj = {
+          content: msg,
+          userid: path[path.length - 1],
+          groupid: groupid,
+        };
         console.log(obj);
-        fetch("/user/chats/messagesend",{
-          method:'post',
-          headers:{
-            'content-type':'application/json'
+        fetch("/user/chats/messagesend", {
+          method: "post",
+          headers: {
+            "content-type": "application/json",
           },
-          body:JSON.stringify(obj)
+          body: JSON.stringify(obj),
         })
-        .then(Response=>Response.json())
-        .then(data=>{
-          createmsg(obj,data.data)
+          .then((Response) => Response.json())
+          .then((data) => {
+            let msg = {
+              name:userName,
+              content: obj.content,
+              name: data.data.name,
+              timestamp: new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+            };
+            createmsg(msg);
+          })
+          .catch((err) => console.log(err));
+      });
+
+      onload = async () => {
+        const Fullurl = window.location.href;
+        const url = new URL(Fullurl);
+        const path = url.pathname.split("/");
+        const groupid = path[path.length - 2];
+        fetch(`/user/groupchats/getmessage/${groupid}`, {
+          method: "get",
+          headers: {
+            "content-type": "application/json",
+          },
         })
-        .catch(err=>console.log(err))
-      })
-      function createmsg(obj,data){
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("done");
+            console.log(data, data.data);
+            if (data.msg) return false;
+            const user = data.data.pop()
+            userName = user.username;
+            data.data.forEach((msg) => {
+              createmsg(msg);
+            });
+          })
+          .catch((err) => console.log(err));
+      };
+
+      function createmsg(data) {
         console.log(data);
         let div = document.createElement("div");
-        div.classList.add("me","msg")
-        div.innerHTML=`
+        if(userName==data.name)
+        div.classList.add("me", "msg");
+        else div.classList.add("msg");
+        div.innerHTML = `
             <span class="name me">${data.name}</span>
             <span
-              >${obj.content}</span
+              >${data.content}</span
             >
-            <span class="time">${Date.now}</span>
+            <span class="time">${data.timestamp}</span>
             
-        `
+        `;
         messageArea.append(div);
       }
     </script>
