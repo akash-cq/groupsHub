@@ -25,6 +25,8 @@
         border: 1px solid yellow;
         height: 100%;
         width: 30%;
+        display: flex;
+        flex-direction: column;
       }
       .right {
         height: 100%;
@@ -70,7 +72,7 @@
         flex-direction: row;
       }
       button {
-        background-color: white;
+        background-color: blueviolet;
         color: black;
         height: 20%;
         width: 12%;
@@ -85,12 +87,125 @@
         margin-left: 5%;
         padding: 10px;
       }
+      .dp {
+        border: 1px solid whitesmoke;
+        height: 50%;
+        width: 30%;
+        border-radius: 50%;
+        display: block;
+        margin-left: 10%;
+        margin-top: 10%;
+      }
+      .hide {
+        display: none;
+      }
+      .groupinfo {
+        height: 30%;
+        width: 100%;
+        border: 1px solid orange;
+        display: flex;
+        flex-direction: row;
+      }
+      .nameofgroup {
+        margin-top: 20%;
+        margin-left: 4%;
+      }
+      img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+      }
+      .setting {
+        width: 100%;
+        height: 70%;
+        border: 1px solid white;
+        display: flex;
+        flex-direction: column;
+      }
+      .setting > div {
+        border: 1px solid white;
+        margin: 5%;
+        padding: 10px;
+        background-color: gray;
+        color: black;
+        border: 1px solid gray;
+        border-radius: 10px;
+      }
+      .setting div:hover {
+        border: 2px solid blueviolet;
+        transition: 0.5s;
+      }
+      .setting > span {
+        display: inline-block;
+        margin-left: 5%;
+      }
+      .requests {
+        height: 50%;
+        overflow: auto;
+        color: aliceblue;
+        display: flex;
+        flex-direction: column;
+      }
+      .request {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        margin: 5%;
+        border: 1px solid blueviolet;
+        border-radius: 10px;
+        background-color: blueviolet;
+        color: black;
+      }
+      .request > button {
+        border: 1px solid black;
+        border-radius: 10px;
+        background-color: blueviolet;
+        color: black;
+        height: max-content;
+        width: max-content;
+      }
+      .request > span {
+        color: white;
+        background-color: blueviolet;
+        border-radius: 20px;
+      }
+      .hide{
+        display: none;
+      }
     </style>
   </head>
   <body>
-    <h1>welecome to chat page</h1>
+    <h1>welcome to chat page</h1>
     <div class="container">
-      <div class="left"></div>
+      <div class="left">
+        <div class="groupinfo">
+          <div class="dp">
+            <img
+              src="https://tse1.mm.bing.net/th?id=OIP.a_C9v1H7RBbVyFjU4udThgHaKX&pid=Api&P=0&h=180"
+              alt="dp"
+            />
+          </div>
+          <div class="nameofgroup"><%= obj.name %></div>
+        </div>
+        <div class="setting">
+          <span>Description</span>
+          <div class="discription"><%= obj.description %></div>
+          <span>Total members</span>
+          <div class="membersD"><%= obj.members %></div>
+          <% if(showrequest) {%>
+          <div class="request_lsit">Request pending</div>
+          <div class="requests">
+            <% obj.request.forEach((request) => {%>
+            <div class="request">
+              <span><%= request.senderName %></span>
+              <button class="accept"  data-userid="<%= request.senderId %>">Accept</button>
+              <button class="reject"  data-userid="<%= request.senderId %>">Reject</button>
+            </div>
+            <%})%>
+          </div>
+          <%}%>
+        </div>
+      </div>
       <div class="right">
         <div class="message"></div>
         <div class="text">
@@ -103,7 +218,11 @@
       let txt = document.querySelector("textarea");
       let btnSend = document.querySelector(".submit");
       let messageArea = document.querySelector(".message");
+      let requestArea = document.querySelector(".requests");
+      let acceptBtn = document.querySelector(".accept")
+      let rejectBtn = document.querySelector(".reject");
       let userName;
+
       btnSend.addEventListener("click", async () => {
         let msg = txt.value.trim();
         if (msg == "") return false;
@@ -129,7 +248,7 @@
           .then((Response) => Response.json())
           .then((data) => {
             let msg = {
-              name:userName,
+              name: userName,
               content: obj.content,
               name: data.data.name,
               timestamp: new Date().toLocaleTimeString([], {
@@ -158,7 +277,7 @@
             console.log("done");
             console.log(data, data.data);
             if (data.msg) return false;
-            const user = data.data.pop()
+            const user = data.data.pop();
             userName = user.username;
             data.data.forEach((msg) => {
               createmsg(msg);
@@ -170,8 +289,7 @@
       function createmsg(data) {
         console.log(data);
         let div = document.createElement("div");
-        if(userName==data.name)
-        div.classList.add("me", "msg");
+        if (userName == data.name) div.classList.add("me", "msg");
         else div.classList.add("msg");
         div.innerHTML = `
             <span class="name me">${data.name}</span>
@@ -182,7 +300,34 @@
             
         `;
         messageArea.append(div);
+        messageArea.scrollTop = messageArea.scrollHeight;
       }
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".accept, .reject").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const userId = button.getAttribute("data-userid");
+      const status = button.classList.contains("accept") ? "accepted" : "rejected";
+
+      try {
+        groupid = `<%= obj.groupid %>`
+        console.log(groupid)
+        const response = await fetch("/handle-group-request", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ groupid, userId,status }),
+        });
+
+        const result = await response.json();
+        alert(result.msg);
+
+        button.parentElement.remove(); // Remove the request from UI
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    });
+  });
+});
+
     </script>
   </body>
 </html>

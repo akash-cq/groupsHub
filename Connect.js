@@ -1,8 +1,10 @@
 const mongoose = require("mongoose");
-
+const dotenv = require("dotenv");
+dotenv.config();
+const url = process.env.MONGO_URI;
 const connectDB = async () => {
   try {
-    await mongoose.connect("mongodb://localhost:27017/group-portal", {
+    await mongoose.connect(url, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

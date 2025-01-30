@@ -27,7 +27,7 @@ const groupSchema = new mongoose.Schema({
           }),
       },
       date: {
-        type: String, 
+        type: String,
         default: () => new Date().toISOString().split("T")[0],
       },
     },
@@ -41,6 +41,12 @@ const groupSchema = new mongoose.Schema({
     enum: ["public", "private"],
     default: "public",
   },
+  Request: [
+    {
+      senderId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      senderName: String,
+    },
+  ],
   created_at: { type: Date, default: Date.now },
   last_Active: { type: Date, default: Date.now },
 });

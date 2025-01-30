@@ -26,7 +26,14 @@ router.get(
   midles.isAuthenticated,
   controller.groupListData
 );
+
 router.post("/user/joingroup/join", controller.joinGroupHandle);
+router.post("/user/joingroup/join/rqst", controller.joinGroupHandleRqst);
+router.post(
+  "/handle-group-request",
+  controller.joinGroupHandleAcceptRej
+);
+
 router.get("/chats/:groupid/:userId", midles.isAuthenticated, controller.chatPage);
 router.post("/user/chats/messagesend", controller.Chats);
 router.get("/user/groupchats/getmessage/:groupid",controller.getmsg)

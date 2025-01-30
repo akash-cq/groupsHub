@@ -28,6 +28,9 @@ function createCards(obj) {
   if (obj.join || obj.adminIs) {
     type = "Joined Already";
   }
+  else if(obj.isRqst){
+    type = "Request Send..";
+  }
   let cards = document.createElement("div");
   cards.className = "card";
   cards.innerHTML = `
@@ -62,6 +65,28 @@ function createCards(obj) {
         console.log(data.msg);
         if (data.msg == "you have joined the group")
           event.target.innerHTML = "joined";
+      } catch (err) {
+        console.log(err);
+      }
+    }else if (
+      obj.grouptype == "private" &&
+      event.target.innerHTML == "Request"
+    ) {
+      try {
+        console.log(obj.groupname);
+        let response = await fetch("/user/joingroup/join/rqst", {
+          method: "post",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ groupname: obj.groupname }),
+        });
+        console.log(response);
+        if (!response.ok) throw new Error("error");
+        let data = await response.json();
+        alert(data);
+        console.log(data.msg);
+        if (data.msg == "wait") event.target.innerHTML = "Request send.";
       } catch (err) {
         console.log(err);
       }

@@ -1,19 +1,22 @@
 const express = require('express');
 const app = express();
+require('dotenv').config();
+
 const path = require("path");
 const routes = require('./routes/Routes');
 const mongo = require("./Connect")
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
-const port = 6700||3000;
+const port = process.env.PORT || 5000;
+const secret = process.env.SECRET_KEY;
 app.use(express.json());
 app.use(cookieParser());
 app.use(
   session({
     resave: true,
     saveUninitialized: true,
-    secret: "akash-maimt",
+    secret: secret,
   })
 );
 mongo();
