@@ -298,13 +298,15 @@ async function chatPage(req, res) {
       requests.push(obj2)
     })
   }
+  let adminIs = group.admin == userid;
   let obj={
     name:group.name,
     description:group.description,
     members:group.members.length,
     groupid:groupid,
     requestL:group.Request.length,
-    request:requests
+    request:requests,
+    adminIs:adminIs
   }
   return res.render("html/chat", {
     obj,
@@ -373,57 +375,61 @@ async function getmsg(req, res) {
   }
 }
 
-async function joinGroupHandleAcceptRej(req, res) {
-  try {
-    const { groupid, userId, status } = req.body; // Status can be 'accepted' or 'rejected'
-    console.log(req.body)
-    // Find the grou
-    const group = await Group.findById(groupid );
-    if (!group) return res.status(404).json({ msg: "Group not found" });
+  async function joinGroupHandleAcceptRej(req, res) {
+    try {
+      const { groupid, userId, status } = req.body; // Status can be 'accepted' or 'rejected'
+      console.log(req.body)
+      // Find the grou
+      const group = await Group.findById(groupid );
+      if (!group) return res.status(404).json({ msg: "Group not found" });
 
-    // Find the user
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ msg: "User not found" });
+      // Find the user
+      const user = await User.findById(userId);
+      if (!user) return res.status(404).json({ msg: "User not found" });
 
-    if (status === "accepted") {
-      // ✅ Accepting the request: Add user to group members
-      if (
-        group.members.some(
-          (member) => member._id.toString() === userId.toString()
-        )
-      ) {
-        return res.status(200).json({ msg: "You are already a member" });
+      if (status === "accepted") {
+        // ✅ Accepting the request: Add user to group members
+        if (
+          group.members.some(
+            (member) => member._id.toString() === userId.toString()
+          )
+        ) {
+          return res.status(200).json({ msg: "You are already a member" });
+        }
+
+        group.members.push(userId);
+        await group.save();
+
+        let obj = {
+          groupId: groupid,
+          groupname: group.name,
+          role: "member",
+        };
+
+        user.groups.push(obj);
+
+        await user.save();
+        await Group.updateOne(
+          { _id: groupid },
+          { $pull: { Request: { senderId: userId } } } // Remove request without adding user to members
+        );
+        return res.status(200).json({ msg: "User has joined the group" });
+      } else if (status === "rejected") {
+        // ✅ Rejecting the request: Just remove the request
+        await Group.updateOne(
+          { _id: groupid },
+          { $pull: { Request: { senderId: userId } } } // Remove request without adding user to members
+        );
+
+        return res.status(200).json({ msg: "Join request has been rejected" });
       }
 
-      group.members.push(userId);
-      await group.save();
-
-      let obj = {
-        groupId: group._id,
-        groupname: group.name,
-        role: "member",
-      };
-
-      user.groups.push(obj);
-      await user.save();
-
-      return res.status(200).json({ msg: "User has joined the group" });
-    } else if (status === "rejected") {
-      // ✅ Rejecting the request: Just remove the request
-      await Group.updateOne(
-        { _id: group._id },
-        { $pull: { request: { senderId: userId } } } // Remove request without adding user to members
-      );
-
-      return res.status(200).json({ msg: "Join request has been rejected" });
+      return res.status(400).json({ msg: "Invalid request status" });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ msg: "Internal server error" });
     }
-
-    return res.status(400).json({ msg: "Invalid request status" });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ msg: "Internal server error" });
   }
-}
 
 module.exports = {
   handleHome,
