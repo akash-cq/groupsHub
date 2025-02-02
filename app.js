@@ -41,12 +41,9 @@ const io = new Server(server);
 // Listen for incoming connections
 const groups = {};
 io.use((socket, next) => {
-  const sessionID = socket.request.headers.cookie
-    .split("; ")
-    .find((cookie) => cookie.startsWith("connect.sid"))
-    ?.split("=")[1]; // Extract session cookie
+  const token = socket.handshake.auth?.token;
 
-  if (sessionID && socket.request.session && socket.request.session.userInfo) {
+  if (token) {
     return next();
   } else {
     next(new Error("Authentication error")); // Reject connection if not authenticated

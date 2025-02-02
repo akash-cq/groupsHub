@@ -229,7 +229,9 @@
       let rejectBtn = document.querySelector(".reject");
       let userName;
       let socket = io("http://localhost:6700", {
-        withCredentials: true, // Ensure cookies are sent with the request
+         auth: {
+           token: sessionStorage.getItem("token"),
+         },
       });
       joinGroup();
       function joinGroup() {
@@ -259,6 +261,7 @@
           method: "post",
           headers: {
             "content-type": "application/json",
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
           },
           body: JSON.stringify(obj),
         })
@@ -295,6 +298,7 @@
           method: "get",
           headers: {
             "content-type": "application/json",
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
           },
         })
           .then((response) => response.json())
@@ -322,7 +326,7 @@
               >${data.content}</span
             >
             <span class="time">${data.timestamp}</span>
-            
+
         `;
         messageArea.append(div);
         messageArea.scrollTop = messageArea.scrollHeight;
@@ -340,7 +344,10 @@
               console.log(groupid);
               const response = await fetch("/handle-group-request", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${sessionStorage.getItem("token")}`,
+                },
                 body: JSON.stringify({ groupid, userId, status }),
               });
 

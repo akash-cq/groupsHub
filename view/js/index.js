@@ -15,6 +15,7 @@ btnJoin.addEventListener("click", () => {
 });
 window.onload = async () => {
   try {
+    if(!sessionStorage.getItem("token")) window.location = "/user/login"
     let count = 1;
     let data = await fetch("/user/details");
     let user = await data.json();

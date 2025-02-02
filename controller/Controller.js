@@ -1,8 +1,11 @@
 const { error, timeStamp } = require("console");
-const { isAuthenticated, getUser } = require("../middleware/auth");
+const { tokenSet,isAuthenticated, getUser } = require("../middleware/auth");
 const User = require("../model/User");
 const Group = require("../model/Group");
-const { request } = require("http");
+const OtpModel = require("../model/otp");
+const otpGenerator = require("otp-generator");
+const transporter = require("../middleware/mailer");
+
 function handleHome(req, res) {
   res.render("html/index");
 }
@@ -41,18 +44,26 @@ async function groupCreater(req, res) {
   }
 }
 async function userRegisterhandle(req, res) {
-  const { user_name, user_email, user_pass } = req.body;
-  console.log(user_name);
-  if (checkPost(user_name, user_email, user_pass)) {
+  const { name, email, password, otp } = req.body;
+  if (checkPost(name, email, password)) {
+    console.log(req.body);
     try {
+      const otpRecord = await OtpModel.findOne({ email: email }).sort({
+        createdAt: -1,
+      });
+      console.log(otpRecord);
+      if (!otpRecord || otpRecord.otp != otp)
+        return res.status(402).json({ msg: "otp is Wrong" });
       const user = new User({
-        name: user_name,
-        email: user_email,
-        password: user_pass,
+        name: name,
+        email: email,
+        password: password,
       });
       await user.save();
-      return res.status(200).json({ msg: "user created" });
-    } catch {
+      await OtpModel.findOneAndDelete({ otp: otp });
+      return res.status(200).json({ msg: "success" });
+    } catch (error) {
+      console.log(error);
       return res.status(500).json({ msg: "error registering user", error });
     }
   } else {
@@ -87,17 +98,18 @@ async function loginHandle(req, res) {
       return res
         .status(400)
         .json({ msg: "wrong password", msgExpiration: expirationTime });
-    const obj = {
+
+    const payload = {
       user_id: userInfo._id,
       user_name: userInfo.name,
       user_email: userInfo.email,
     };
-    req.session.userInfo = obj;
-    await req.session.save();
-    console.log("done");
+    console.log(payload+"asdfg")
+    const token = tokenSet(req,res,payload);
+    console.log(token);
     return res
       .status(200)
-      .json({ msg: "success", msgExpiration: expirationTime });
+      .json({ msg: "success", msgExpiration: expirationTime,token });
   } catch (error) {
     return res.render("html/login", {
       msg: "error internaly",
@@ -113,7 +125,7 @@ function loginPage(req, res) {
 function registartionPage(req, res) {
   res.render("html/registartion");
 }
-async function regiterUser(req, res) {
+async function regiterUserOTP(req, res) {
   const { name, email, password } = req.body;
   try {
     console.log(req.body);
@@ -121,21 +133,42 @@ async function regiterUser(req, res) {
     if (emailExist) return res.status(400).json({ msg: "email" });
     const userExist = await User.findOne({ name: name });
     if (userExist) return res.status(400).json({ msg: "name" });
-    if (password.length <= 6) return res.status(400), json({ msg: "pass" });
-    const user = new User({
-      name: name,
-      email: email,
-      password: password,
+    if (password.length <= 6) return res.status(400).json({ msg: "pass" });
+    const otp = otpGenerator.generate(6, {
+      digits: true,
+      alphabets: true,
+      specialChars: false,
     });
-    await user.save();
-    return res.status(200).json({ msg: "success" });
+    await OtpModel.create({
+      email: email,
+      otp,
+      createdAt: Date.now(),
+    });
+    const mailOptions = {
+      from: "akash.2024dev@gmail.com",
+      to: email,
+      subject: "OTP VERIFICATION",
+      text: `Your OTP(ONE TIME PASSWORD ) is ${otp} valid for only 5 minutes`,
+    };
+
+    await transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log("Error sending email:", error);
+        return res.status(200).json({ msg: "wrong email" });
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+      return res.status(200).json({ msg: "otp send" });
+    });
   } catch (error) {
+    console.log(error);
     return res.status(400).json({ msg: "error internaly" });
   }
 }
 async function getdataOfUser(req, res) {
   try {
     const detail = getUser(req, res);
+    console.log(detail);
     const userId = detail.user_id;
     const user = await User.findById(userId);
     let groups = [];
@@ -193,8 +226,8 @@ async function groupListData(req, res) {
         const isAdmin = grps.admin == userId;
         const rqstPending =
           grps?.Request?.filter(
-           (rqst) => rqst?.senderId === userId || rqst?._id==userId
-          ).length > 0; 
+            (rqst) => rqst?.senderId === userId || rqst?._id == userId
+          ).length > 0;
         console.log("t/f");
         let obj = {
           groupname: grps.name,
@@ -204,7 +237,7 @@ async function groupListData(req, res) {
           group_id: grps._id,
           join: joined,
           adminIs: isAdmin,
-          isRqst:rqstPending
+          isRqst: rqstPending,
         };
         data.push(obj);
       }
@@ -251,15 +284,15 @@ async function joinGroupHandle(req, res) {
     return res.status(500).json({ msg: "error internaly" });
   }
 }
-async function joinGroupHandleRqst(req,res) {
-  try{
+async function joinGroupHandleRqst(req, res) {
+  try {
     const { groupname } = req.body;
     const userDetails = getUser(req, res);
     console.log(userDetails);
     const userId = userDetails.user_id;
     const group = await Group.findOne({ name: groupname });
     if (group.admin == userId || !group)
-    return res.status(200).json({ msg: "you are admin of this group" });
+      return res.status(200).json({ msg: "you are admin of this group" });
     console.log(groupname);
     if (
       group.members.some(
@@ -267,15 +300,15 @@ async function joinGroupHandleRqst(req,res) {
       )
     )
       return res.status(200).json({ msg: "you are already" });
-      let obj={
-        senderId:userId,
-        senderName:userDetails.user_name
-      }
-        group.Request.push(obj);
-        await group.save()
+    let obj = {
+      senderId: userId,
+      senderName: userDetails.user_name,
+    };
+    group.Request.push(obj);
+    await group.save();
     return res.status(200).json({ msg: "wait" });
-  }catch{
-        return res.status(500).json({ msg: "error internaly" });
+  } catch {
+    return res.status(500).json({ msg: "error internaly" });
   }
 }
 async function chatPage(req, res) {
@@ -288,26 +321,26 @@ async function chatPage(req, res) {
   if (!group) return res.status(404).json({ msg: "group not found" });
   const isMember = group.members.find((member) => member._id == userid);
   if (!isMember) return res.status(401).json({ msg: "not authorized" });
-  let requests=[];
-  if(group.Request.length>0){
-    group.Request.forEach((obj)=>{
-      let obj2={
-        senderId:obj.senderId,
-        senderName:obj.senderName
-      }
-      requests.push(obj2)
-    })
+  let requests = [];
+  if (group.Request.length > 0) {
+    group.Request.forEach((obj) => {
+      let obj2 = {
+        senderId: obj.senderId,
+        senderName: obj.senderName,
+      };
+      requests.push(obj2);
+    });
   }
   let adminIs = group.admin == userid;
-  let obj={
-    name:group.name,
-    description:group.description,
-    members:group.members.length,
-    groupid:groupid,
-    requestL:group.Request.length,
-    request:requests,
-    adminIs:adminIs
-  }
+  let obj = {
+    name: group.name,
+    description: group.description,
+    members: group.members.length,
+    groupid: groupid,
+    requestL: group.Request.length,
+    request: requests,
+    adminIs: adminIs,
+  };
   return res.render("html/chat", {
     obj,
     showrequest: group.group_type == "private",
@@ -331,6 +364,7 @@ async function Chats(req, res) {
       name: user.user_name,
     };
     group.messages.push(obj);
+    group.last_Active = new Date();
     await group.save();
     console.log("time");
     let data = {
@@ -362,9 +396,9 @@ async function getmsg(req, res) {
         data.push(obj2);
       });
     }
-    console.log("user before details")
-    let user = getUser(req,res);
-    console.log(user,"user")
+    console.log("user before details");
+    let user = getUser(req, res);
+    console.log(user, "user");
     let obj = {
       username: user.user_name,
     };
@@ -375,61 +409,61 @@ async function getmsg(req, res) {
   }
 }
 
-  async function joinGroupHandleAcceptRej(req, res) {
-    try {
-      const { groupid, userId, status } = req.body; // Status can be 'accepted' or 'rejected'
-      console.log(req.body)
-      // Find the grou
-      const group = await Group.findById(groupid );
-      if (!group) return res.status(404).json({ msg: "Group not found" });
+async function joinGroupHandleAcceptRej(req, res) {
+  try {
+    const { groupid, userId, status } = req.body; // Status can be 'accepted' or 'rejected'
+    console.log(req.body);
+    // Find the grou
+    const group = await Group.findById(groupid);
+    if (!group) return res.status(404).json({ msg: "Group not found" });
 
-      // Find the user
-      const user = await User.findById(userId);
-      if (!user) return res.status(404).json({ msg: "User not found" });
+    // Find the user
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ msg: "User not found" });
 
-      if (status === "accepted") {
-        // ✅ Accepting the request: Add user to group members
-        if (
-          group.members.some(
-            (member) => member._id.toString() === userId.toString()
-          )
-        ) {
-          return res.status(200).json({ msg: "You are already a member" });
-        }
-
-        group.members.push(userId);
-        await group.save();
-
-        let obj = {
-          groupId: groupid,
-          groupname: group.name,
-          role: "member",
-        };
-
-        user.groups.push(obj);
-
-        await user.save();
-        await Group.updateOne(
-          { _id: groupid },
-          { $pull: { Request: { senderId: userId } } } // Remove request without adding user to members
-        );
-        return res.status(200).json({ msg: "User has joined the group" });
-      } else if (status === "rejected") {
-        // ✅ Rejecting the request: Just remove the request
-        await Group.updateOne(
-          { _id: groupid },
-          { $pull: { Request: { senderId: userId } } } // Remove request without adding user to members
-        );
-
-        return res.status(200).json({ msg: "Join request has been rejected" });
+    if (status === "accepted") {
+      // ✅ Accepting the request: Add user to group members
+      if (
+        group.members.some(
+          (member) => member._id.toString() === userId.toString()
+        )
+      ) {
+        return res.status(200).json({ msg: "You are already a member" });
       }
 
-      return res.status(400).json({ msg: "Invalid request status" });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ msg: "Internal server error" });
+      group.members.push(userId);
+      await group.save();
+
+      let obj = {
+        groupId: groupid,
+        groupname: group.name,
+        role: "member",
+      };
+
+      user.groups.push(obj);
+
+      await user.save();
+      await Group.updateOne(
+        { _id: groupid },
+        { $pull: { Request: { senderId: userId } } } // Remove request without adding user to members
+      );
+      return res.status(200).json({ msg: "User has joined the group" });
+    } else if (status === "rejected") {
+      // ✅ Rejecting the request: Just remove the request
+      await Group.updateOne(
+        { _id: groupid },
+        { $pull: { Request: { senderId: userId } } } // Remove request without adding user to members
+      );
+
+      return res.status(200).json({ msg: "Join request has been rejected" });
     }
+
+    return res.status(400).json({ msg: "Invalid request status" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "Internal server error" });
   }
+}
 
 module.exports = {
   handleHome,
@@ -439,7 +473,7 @@ module.exports = {
   loginHandle,
   loginPage,
   registartionPage,
-  regiterUser,
+  regiterUserOTP,
   getdataOfUser,
   landingShow,
   Joinpagehandle,

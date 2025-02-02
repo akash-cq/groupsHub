@@ -1,10 +1,34 @@
-function isAuthenticated(req, res, next) {
-  if (req.session.userInfo) {
-    return next();
+const jwt = require("jsonwebtoken");
+const JWT_SECRET ="AKASH"
+function tokenSet(req, res, payload) {
+      console.log(payload + "asdfg");
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "2h" });
+   res.cookie("jwt", token, {
+     httpOnly: true, // Prevents JavaScript from accessing the cookie (security feature)
+     secure: true, // Set to true in production (requires HTTPS)
+     sameSite: "Strict", // Prevents CSRF attacks
+     maxAge: 60 * 60 * 1000, // 1 hour expiration
+   });
+  return token;
+}
+function isAuthenticated(req, res,next) {
+  const token = req.header("Authorization")?.replace("Bearer ", "");
+  const tokens = req.cookies.jwt;
+  if (!tokens) {
+    return res.status(403).json({ msg: "Access denied. No token provided" });
   }
-  return res.redirect("/user/login");
+
+  try {
+    const decoded = jwt.verify(tokens, JWT_SECRET);
+    next();
+  } catch (error) {
+    res.status(401).json({ msg: "Invalid or expired token" });
+  }
 }
-function getUser(req,res){
-  return req.session.userInfo;
+function getUser(req, res) {
+  const token =  req.cookies.jwt;
+  const decoded = jwt.verify(token, "AKASH");
+  console.log(decoded)
+  return decoded;
 }
-module.exports = { isAuthenticated, getUser };
+module.exports = {tokenSet, isAuthenticated, getUser };

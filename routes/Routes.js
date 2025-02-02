@@ -3,10 +3,11 @@ const midles = require("../middleware/auth.js");
 const express = require("express");
 const router = express.Router();
 router.get("/", controller.landingShow);
-router.get("/user/details", midles.isAuthenticated, controller.getdataOfUser);
+router.get("/user/details", controller.getdataOfUser);
 router.get("/user/registartion", controller.registartionPage);
-router.post("/user/registartion", controller.regiterUser);
-router.get("/home", midles.isAuthenticated, controller.handleHome);
+router.post("/user/registartion/otp", controller.regiterUserOTP);
+router.post("/user/registartion", controller.userRegisterhandle);
+router.get("/home", controller.handleHome);
 router.get("/user/login", controller.loginPage);
 router.get("/user/joingroup", controller.Joinpagehandle);
 router.post("/user/login", controller.loginHandle);
@@ -20,7 +21,6 @@ router.post(
   midles.isAuthenticated,
   controller.groupCreater
 );
-router.post("/user-registration", controller.userRegisterhandle);
 router.get(
   "/user/joingroup/listgroups/:type",
   midles.isAuthenticated,

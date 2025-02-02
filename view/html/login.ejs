@@ -16,7 +16,7 @@
           <ul>
             <li class="login">Login</li>
             <li class="register">Register</li>
-            <li class="dashboard"> DashBoard</li>
+            <li class="dashboard">DashBoard</li>
           </ul>
         </div>
       </nav>
@@ -71,8 +71,11 @@
             return Response.json();
           })
           .then((data) => {
-            if (data.msg == "success") window.location = "/home";
-            else {
+            if (data.msg == "success") {
+              console.log(data.token)
+              sessionStorage.setItem("token", data.token);
+              window.location="/home"
+            } else {
               message.textContent = "Invalid email or password";
               message.style.color = "red";
               setTimeout(() => {
@@ -99,14 +102,14 @@
           console.log(err);
         }
       });
-      const dashboard = document.querySelector(".dashboard")
-dashboard.addEventListener("click", async () => {
-  try {
-    location = "/";
-  } catch (err) {
-    console.log(err);
-  }
-});
+      const dashboard = document.querySelector(".dashboard");
+      dashboard.addEventListener("click", async () => {
+        try {
+          location = "/";
+        } catch (err) {
+          console.log(err);
+        }
+      });
     </script>
   </body>
 </html>

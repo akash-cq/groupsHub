@@ -27,8 +27,7 @@ function createCards(obj) {
   let type = obj.grouptype == "private" ? "Request" : "join now";
   if (obj.join || obj.adminIs) {
     type = "Joined Already";
-  }
-  else if(obj.isRqst){
+  } else if (obj.isRqst) {
     type = "Request Send..";
   }
   let cards = document.createElement("div");
@@ -55,6 +54,7 @@ function createCards(obj) {
           method: "post",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
           },
           body: JSON.stringify({ groupname: obj.groupname }),
         });
@@ -68,7 +68,7 @@ function createCards(obj) {
       } catch (err) {
         console.log(err);
       }
-    }else if (
+    } else if (
       obj.grouptype == "private" &&
       event.target.innerHTML == "Request"
     ) {
@@ -78,6 +78,7 @@ function createCards(obj) {
           method: "post",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${sessionStorage.getItem("token")}`,
           },
           body: JSON.stringify({ groupname: obj.groupname }),
         });
