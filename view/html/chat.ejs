@@ -228,7 +228,7 @@
       let acceptBtn = document.querySelector(".accept");
       let rejectBtn = document.querySelector(".reject");
       let userName;
-      let socket = io("http://localhost:6700", {
+      let socket = io("https://groups-hub.vercel.app/", {
          auth: {
            token: sessionStorage.getItem("token"),
          },
