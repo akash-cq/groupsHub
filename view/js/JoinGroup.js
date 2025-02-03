@@ -3,6 +3,18 @@ const main = document.querySelector("main");
 let logo = document.querySelector(".logo");
 let btnCreate = document.querySelector(".create");
 let btnJoin = document.querySelector(".join");
+let logout = document.querySelector(".logout");
+logout.addEventListener("click", async () => {
+  sessionStorage.removeItem("token");
+  try {
+    let data = await fetch("/user/logout");
+    let res = await data.json();
+    window.location = "/";
+    console.log(res);
+  } catch (error) {
+    alert("Something went wrong");
+  }
+});
 select.addEventListener("change", async () => {
   const val = select.value;
 
@@ -97,7 +109,7 @@ function createCards(obj) {
   console.log(obj);
 }
 logo.addEventListener("click", () => {
-  window.location = "home";
+  window.location = "/home";
 });
 btnCreate.addEventListener("click", () => {
   window.location = "/user/CreategroupPage";

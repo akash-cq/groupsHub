@@ -5,6 +5,7 @@ let email = document.querySelector(".email-info");
 let group_list = document.querySelector("tbody");
 let select = document.querySelector("select");
 let logo = document.querySelector(".logo")
+let logout = document.querySelector(".logout")
 let groupArr = [];
 let userId;
 btnCreate.addEventListener("click", () => {
@@ -12,6 +13,17 @@ btnCreate.addEventListener("click", () => {
 });
 btnJoin.addEventListener("click", () => {
   window.location = "/user/joingroup";
+});
+logout.addEventListener("click", async () => {
+  sessionStorage.removeItem("token");
+  try {
+    let data = await fetch("/user/logout");
+    let res = await data.json();
+    window.location = "/";
+    console.log(res);
+  } catch (error) {
+    alert("Something went wrong");
+  }
 });
 window.onload = async () => {
   try {

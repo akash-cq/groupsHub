@@ -9,8 +9,65 @@
         margin: 0;
         padding: 0;
         background-color: black;
-        color: white;
       }
+      header {
+        background: black;
+        padding: 20px;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo h1 {
+        color: white;
+        font-size: 1.8rem;
+      }
+
+      .menu ul {
+        list-style: none;
+        display: flex;
+        gap: 20px;
+        margin: 0;
+        padding: 0;
+      }
+
+      .menu li {
+        color: white;
+        cursor: pointer;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        border-radius: 5px;
+        display: inline-block;
+        position: relative;
+        /* Ensures stability in layout */
+      }
+
+      .menu li::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: blueviolet;
+        transition: width 0.3s ease;
+      }
+
+      .menu li:hover::after {
+        width: 100%;
+        /* Smooth underline animation */
+      }
+
+      .menu li:hover {
+        color: blueviolet;
+      }
+
       .container {
         border: 1px solid whitesmoke;
         border-radius: 10px;
@@ -175,7 +232,20 @@
     </style>
   </head>
   <body>
-    <h1>welcome to chat page</h1>
+    <header>
+      <nav>
+        <div class="logo">
+          <h1>Group-Portal</h1>
+        </div>
+        <div class="menu">
+          <ul>
+            <li class="join">Join-Group</li>
+            <li class="create">Create-Group</li>
+            <li class="logout">Logout</li>
+          </ul>
+        </div>
+      </nav>
+    </header>
     <div class="container">
       <div class="left">
         <div class="groupinfo">
@@ -227,11 +297,15 @@
       let requestArea = document.querySelector(".requests");
       let acceptBtn = document.querySelector(".accept");
       let rejectBtn = document.querySelector(".reject");
+      let logout = document.querySelector(".logout");
+      let logo = document.querySelector(".logo");
+      let btnCreate = document.querySelector(".create");
+      let btnJoin = document.querySelector(".join");
       let userName;
-      let socket = io("http://localhost:6700", {
-         auth: {
-           token: sessionStorage.getItem("token"),
-         },
+      let socket = io("https://groupshub.onrender.com/", {
+        auth: {
+          token: sessionStorage.getItem("token"),
+        },
       });
       joinGroup();
       function joinGroup() {
@@ -346,7 +420,7 @@
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
-                  "Authorization": `Bearer ${sessionStorage.getItem("token")}`,
+                  Authorization: `Bearer ${sessionStorage.getItem("token")}`,
                 },
                 body: JSON.stringify({ groupid, userId, status }),
               });
@@ -360,6 +434,26 @@
             }
           });
         });
+      });
+      btnCreate.addEventListener("click", () => {
+        window.location = "/user/CreategroupPage";
+      });
+      btnJoin.addEventListener("click", () => {
+        window.location = "/user/joingroup";
+      });
+      logo.addEventListener("click", () => {
+        window.location = "/home";
+      });
+      logout.addEventListener("click", async () => {
+        sessionStorage.removeItem("token");
+        try {
+          let data = await fetch("/user/logout");
+          let res = await data.json();
+          window.location = "/";
+          console.log(res);
+        } catch (error) {
+          alert("Something went wrong");
+        }
       });
     </script>
   </body>

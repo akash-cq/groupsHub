@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const JWT_SECRET ="AKASH"
+const JWT_SECRET =process.env.JWT_SECRET;
 function tokenSet(req, res, payload) {
       console.log(payload + "asdfg");
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "2h" });
@@ -27,7 +27,7 @@ function isAuthenticated(req, res,next) {
 }
 function getUser(req, res) {
   const token =  req.cookies.jwt;
-  const decoded = jwt.verify(token, "AKASH");
+  const decoded = jwt.verify(token, JWT_SECRET);
   console.log(decoded)
   return decoded;
 }

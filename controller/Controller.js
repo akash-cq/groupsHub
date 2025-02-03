@@ -5,7 +5,14 @@ const Group = require("../model/Group");
 const OtpModel = require("../model/otp");
 const otpGenerator = require("otp-generator");
 const transporter = require("../middleware/mailer");
-
+async function  logout(req,res){
+  try {
+    res.clearCookie("token");
+    return res.status(200).json({msg:"logout success"});
+  } catch (error) {
+    return res.status(500).json({msg:"error internaly"});
+  }
+}
 function handleHome(req, res) {
   res.render("html/index");
 }
@@ -484,4 +491,5 @@ module.exports = {
   getmsg,
   joinGroupHandleRqst,
   joinGroupHandleAcceptRej,
+  logout,
 };

@@ -16,7 +16,7 @@
           <ul>
             <li class="join">Join-Group</li>
             <li class="create">Create-Group</li>
-            <li class="groups-analysis">Your Groups</li>
+            <li class="logout">Logout</li>
           </ul>
         </div>
       </nav>
@@ -115,6 +115,18 @@
       logo.addEventListener("click", () => {
         window.location = "/home";
       });
+      let logout = document.querySelector(".logout");
+logout.addEventListener("click",async () => {
+  sessionStorage.removeItem("token");
+  try{
+    let data = await fetch("/user/logout");
+    let res = await data.json();
+    window.location = "/";
+    console.log(res);
+  }catch(error){
+    alert("Something went wrong")
+  }
+});
     </script>
   </body>
 </html>
