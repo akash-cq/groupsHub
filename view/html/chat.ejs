@@ -303,9 +303,15 @@
       let btnJoin = document.querySelector(".join");
       let userName;
       let socket = io("https://groupshub.onrender.com/", {
+<<<<<<< HEAD
         auth: {
           token: sessionStorage.getItem("token"),
         },
+=======
+         auth: {
+           token: sessionStorage.getItem("token"),
+         },
+>>>>>>> 84bcfb72c6442be1e5405ccc0b153099aa87a6af
       });
       joinGroup();
       function joinGroup() {
